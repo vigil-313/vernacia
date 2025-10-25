@@ -8,15 +8,28 @@
           "url": "https://www.youtube.com/watch?v=0ROVmN3XLrk",
           "title": "第一部 龙岭迷窟（一）#有声小说 #鬼吹灯 #有声书",
           "splits": 3,
-          "status": "pending",
+          "status": "completed",
           "error": null,
-          "processed_files": []
+          "processed_files": [
+            {
+              "video": "playlists/ghost_blows_light/processed/第一部 龙岭迷窟（一）#有声小说 #鬼吹灯 #有声书_part1.mp4",
+              "srt": "playlists/ghost_blows_light/processed/第一部 龙岭迷窟（一）#有声小说 #鬼吹灯 #有声书_part1.srt"
+            },
+            {
+              "video": "playlists/ghost_blows_light/processed/第一部 龙岭迷窟（一）#有声小说 #鬼吹灯 #有声书_part2.mp4",
+              "srt": "playlists/ghost_blows_light/processed/第一部 龙岭迷窟（一）#有声小说 #鬼吹灯 #有声书_part2.srt"
+            },
+            {
+              "video": "playlists/ghost_blows_light/processed/第一部 龙岭迷窟（一）#有声小说 #鬼吹灯 #有声书_part3.mp4",
+              "srt": "playlists/ghost_blows_light/processed/第一部 龙岭迷窟（一）#有声小说 #鬼吹灯 #有声书_part3.srt"
+            }
+          ]
         },
         {
           "url": "https://www.youtube.com/watch?v=O9Z9FXPgU44",
           "title": "21-40  第一部 龙岭迷窟（二）#有声小说 #鬼吹灯 #有声书 #无删减",
           "splits": 3,
-          "status": "pending",
+          "status": "processing",
           "error": null,
           "processed_files": []
         },

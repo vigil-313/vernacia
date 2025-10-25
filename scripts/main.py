@@ -19,6 +19,10 @@ import tempfile
 import shutil
 from datetime import datetime
 import argparse
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 class VideoProcessor:
     def __init__(self, base_dir):
@@ -62,15 +66,14 @@ class VideoProcessor:
         
         cmd = [
             "yt-dlp",
-            "--format", "worst[height<=480]+bestaudio/worst",
-            "--merge-output-format", "mp4",
+            "--format", "18/worst[height<=480][protocol^=https]+bestaudio/best",  # Low quality video + best audio
             "--output", str(output_dir / "%(title)s.%(ext)s"),
             "--concurrent-fragments", "8",
             url
         ]
         
         print(f"📥 Downloading: {url}")
-        result = subprocess.run(cmd, stderr=subprocess.PIPE, text=True)
+        result = subprocess.run(cmd, text=True)
         
         if result.returncode == 0:
             # Find downloaded file
@@ -78,28 +81,28 @@ class VideoProcessor:
             print(f"✅ Downloaded: {video_file.name}")
             return video_file
         else:
-            raise Exception(f"Download failed: {result.stderr}")
+            raise Exception(f"Download failed with return code: {result.returncode}")
     
     def download_audio_for_transcription(self, url, temp_dir):
-        """Download high quality audio for transcription"""
+        """Download lower quality audio for faster transcription"""
         cmd = [
             "yt-dlp",
-            "--extract-audio",
+            "--extract-audio", 
             "--audio-format", "mp3",
-            "--audio-quality", "0",  # Highest quality for transcription
-            "--format", "bestaudio",
+            "--audio-quality", "5",  # Medium quality - much smaller files, same transcription accuracy
+            "--format", "worstaudio",  # Use worst audio quality for speed
             "--output", str(temp_dir / "%(title)s.%(ext)s"),
             url
         ]
         
         print(f"🎧 Downloading audio for transcription...")
-        result = subprocess.run(cmd, stderr=subprocess.PIPE, text=True)
+        result = subprocess.run(cmd, text=True)
         
         if result.returncode == 0:
             audio_file = next(temp_dir.glob("*.mp3"))
             return audio_file
         else:
-            raise Exception(f"Audio download failed: {result.stderr}")
+            raise Exception(f"Audio download failed with return code: {result.returncode}")
     
     def split_audio_if_needed(self, audio_file, chunk_duration=300):
         """Split large audio files for Whisper API"""
@@ -187,25 +190,83 @@ class VideoProcessor:
             return float(result.stdout.strip())
         return None
     
-    def split_video(self, video_file, num_parts, output_dir):
-        """Split video into parts"""
-        duration = self.get_video_duration(video_file)
-        if not duration:
-            raise Exception("Could not get video duration")
+    def find_smart_split_points(self, segments, total_duration, num_parts, overlap_seconds=15):
+        """Find sentence-aware split points with overlap"""
+        import re
         
-        part_duration = duration / num_parts
-        print(f"✂️ Splitting video into {num_parts} parts ({part_duration/60:.1f}min each)")
+        # Target split points (without considering sentences)
+        target_splits = [(i * total_duration / num_parts) for i in range(1, num_parts)]
+        
+        # Chinese sentence endings
+        sentence_endings = re.compile(r'[。！？]')
+        
+        smart_splits = []
+        
+        for target_time in target_splits:
+            # Find segments around target time (±2 minutes window)
+            window = 120  # 2 minutes
+            candidates = []
+            
+            for segment in segments:
+                segment_end = segment.end
+                if abs(segment_end - target_time) <= window:
+                    # Check if this segment ends with punctuation
+                    if sentence_endings.search(segment.text.strip()):
+                        candidates.append((segment_end, abs(segment_end - target_time)))
+            
+            if candidates:
+                # Choose the sentence ending closest to target time
+                best_split = min(candidates, key=lambda x: x[1])[0]
+                smart_splits.append(best_split)
+                print(f"🎯 Smart split at {best_split/60:.1f}min (target: {target_time/60:.1f}min)")
+            else:
+                # Fallback to target time if no sentence endings found
+                smart_splits.append(target_time)
+                print(f"⚠️  Fallback split at {target_time/60:.1f}min (no sentence boundary)")
+        
+        # Calculate split ranges with overlap
+        split_ranges = []
+        
+        for i in range(num_parts):
+            if i == 0:
+                # First part: start to first split + overlap
+                start_time = 0
+                end_time = smart_splits[0] + overlap_seconds if len(smart_splits) > 0 else total_duration
+            elif i == num_parts - 1:
+                # Last part: last split - overlap to end
+                start_time = smart_splits[i-1] - overlap_seconds
+                end_time = total_duration
+            else:
+                # Middle parts: previous split - overlap to current split + overlap
+                start_time = smart_splits[i-1] - overlap_seconds  
+                end_time = smart_splits[i] + overlap_seconds
+            
+            # Ensure bounds
+            start_time = max(0, start_time)
+            end_time = min(total_duration, end_time)
+            
+            split_ranges.append((start_time, end_time))
+            print(f"📹 Part {i+1}: {start_time/60:.1f}min → {end_time/60:.1f}min ({(end_time-start_time)/60:.1f}min)")
+        
+        return split_ranges
+
+    def split_video(self, video_file, segments, num_parts, total_duration, output_dir):
+        """Split video into sentence-aware parts with overlap"""
+        print(f"✂️ Splitting video with smart sentence boundaries and overlap...")
+        
+        # Find optimal split points
+        split_ranges = self.find_smart_split_points(segments, total_duration, num_parts)
         
         base_name = video_file.stem
         output_files = []
         
-        for i in range(num_parts):
-            start_time = i * part_duration
+        for i, (start_time, end_time) in enumerate(split_ranges):
+            duration = end_time - start_time
             output_file = output_dir / f"{base_name}_part{i+1}.mp4"
             
             cmd = [
                 "ffmpeg", "-i", str(video_file),
-                "-ss", str(start_time), "-t", str(part_duration),
+                "-ss", str(start_time), "-t", str(duration),
                 "-c", "copy", "-avoid_negative_ts", "make_zero",
                 str(output_file)
             ]
@@ -217,41 +278,46 @@ class VideoProcessor:
             else:
                 raise Exception(f"Video split failed: {result.stderr}")
         
-        return output_files, part_duration
+        return output_files, split_ranges
     
-    def split_srt(self, segments, num_parts, total_duration, output_dir, base_name):
-        """Split SRT segments into parts"""
-        part_duration = total_duration / num_parts
+    def split_srt(self, segments, split_ranges, output_dir, base_name):
+        """Split SRT segments into parts with perfect sync"""
         output_files = []
         
-        for part_num in range(num_parts):
-            part_start = part_num * part_duration
-            part_end = (part_num + 1) * part_duration
-            
+        for part_num, (part_start, part_end) in enumerate(split_ranges):
             part_segments = []
             subtitle_counter = 1
             
             for segment in segments:
+                # Check if segment overlaps with this part's time range
                 if segment.start < part_end and segment.end > part_start:
-                    adjusted_start = max(0, segment.start - part_start)
-                    adjusted_end = min(part_duration, segment.end - part_start)
+                    # Adjust timestamps relative to part start (maintaining perfect sync)
+                    adjusted_start = segment.start - part_start
+                    adjusted_end = segment.end - part_start
                     
-                    if adjusted_end > adjusted_start:
-                        adjusted = type('obj', (object,), {
-                            'start': adjusted_start,
-                            'end': adjusted_end,
-                            'text': segment.text
-                        })()
-                        part_segments.append(adjusted)
+                    # Only include if the adjusted timing makes sense
+                    if adjusted_end > 0 and adjusted_start < (part_end - part_start):
+                        # Clamp to part boundaries if needed
+                        adjusted_start = max(0, adjusted_start)
+                        adjusted_end = min(part_end - part_start, adjusted_end)
+                        
+                        if adjusted_end > adjusted_start:
+                            adjusted = type('obj', (object,), {
+                                'start': adjusted_start,
+                                'end': adjusted_end,
+                                'text': segment.text
+                            })()
+                            part_segments.append(adjusted)
             
             if part_segments:
                 srt_file = output_dir / f"{base_name}_part{part_num + 1}.srt"
                 self.generate_srt(part_segments, srt_file)
                 output_files.append(srt_file)
+                print(f"📄 Generated SRT part {part_num + 1}: {len(part_segments)} segments")
         
         return output_files
     
-    def process_video(self, playlist_id, video_idx, video_data):
+    def process_video(self, playlist_id, video_idx, video_data, max_retries=3):
         """Process a single video"""
         url = video_data["url"]
         splits = video_data.get("splits", 3)
@@ -271,8 +337,8 @@ class VideoProcessor:
         try:
             self.update_video_status(playlist_id, video_idx, "processing")
             
-            # Download video
-            video_file = self.download_video(url, video_dir)
+            # Download video with retry logic
+            video_file = self.download_with_retry(url, video_dir, max_retries)
             video_duration = self.get_video_duration(video_file)
             
             # Download and transcribe audio
@@ -282,9 +348,9 @@ class VideoProcessor:
                 audio_chunks = self.split_audio_if_needed(audio_file)
                 segments = self.transcribe_audio(audio_chunks)
             
-            # Split video and SRT
-            video_parts, part_duration = self.split_video(video_file, splits, processed_dir)
-            srt_parts = self.split_srt(segments, splits, video_duration, processed_dir, video_file.stem)
+            # Split video and SRT with smart sentence boundaries
+            video_parts, split_ranges = self.split_video(video_file, segments, splits, video_duration, processed_dir)
+            srt_parts = self.split_srt(segments, split_ranges, processed_dir, video_file.stem)
             
             # Track processed files
             processed_files = []
@@ -308,8 +374,67 @@ class VideoProcessor:
             if temp_dir.exists():
                 shutil.rmtree(temp_dir)
     
-    def run(self, max_videos=None):
+    def cleanup_interrupted_downloads(self):
+        """Clean up partial downloads and reset processing status"""
+        manifest = self.load_manifest()
+        cleaned_count = 0
+        
+        for playlist_id, playlist_data in manifest["playlists"].items():
+            playlist_dir = self.base_dir / "playlists" / playlist_id
+            video_dir = playlist_dir / "videos"
+            
+            for video_idx, video_data in enumerate(playlist_data["videos"]):
+                if video_data["status"] == "processing":
+                    print(f"🧹 Cleaning up interrupted download: {video_data['title'][:50]}...")
+                    
+                    # Remove partial download files
+                    if video_dir.exists():
+                        for partial_file in video_dir.glob("*.part"):
+                            partial_file.unlink()
+                            print(f"   Removed: {partial_file.name}")
+                        for ytdl_file in video_dir.glob("*.ytdl"):
+                            ytdl_file.unlink()
+                            print(f"   Removed: {ytdl_file.name}")
+                    
+                    # Reset status to pending
+                    video_data["status"] = "pending"
+                    video_data["error"] = None
+                    cleaned_count += 1
+        
+        if cleaned_count > 0:
+            self.save_manifest(manifest)
+            print(f"✅ Cleaned up {cleaned_count} interrupted downloads")
+        
+        return cleaned_count
+
+    def download_with_retry(self, url, output_dir, max_retries=3):
+        """Download video with exponential backoff retry logic"""
+        import time
+        import random
+        
+        for attempt in range(max_retries + 1):
+            try:
+                if attempt > 0:
+                    # Exponential backoff: 2^attempt + random jitter
+                    delay = (2 ** attempt) + random.uniform(0, 2)
+                    print(f"🔄 Retry attempt {attempt}/{max_retries} after {delay:.1f}s delay...")
+                    time.sleep(delay)
+                
+                return self.download_video(url, output_dir)
+                
+            except Exception as e:
+                if attempt == max_retries:
+                    # Final attempt failed
+                    raise e
+                else:
+                    print(f"⚠️  Download attempt {attempt + 1} failed: {str(e)[:100]}...")
+                    continue
+
+    def run(self, max_videos=None, max_retries=3):
         """Process pending videos in manifest"""
+        # First, clean up any interrupted downloads
+        self.cleanup_interrupted_downloads()
+        
         manifest = self.load_manifest()
         
         # Count total pending
@@ -342,7 +467,7 @@ class VideoProcessor:
                     
                 if video_data["status"] == "pending":
                     print(f"\n[{processed_count + 1}/{to_process}] Processing video...")
-                    self.process_video(playlist_id, video_idx, video_data)
+                    self.process_video(playlist_id, video_idx, video_data, max_retries)
                     processed_count += 1
         
         remaining = total_pending - processed_count
@@ -355,6 +480,7 @@ def main():
     parser = argparse.ArgumentParser(description="Process Chinese videos for Language Reactor")
     parser.add_argument("count", nargs="?", type=int, help="Number of videos to process (default: all)")
     parser.add_argument("--count", type=int, help="Number of videos to process")
+    parser.add_argument("--retries", type=int, default=3, help="Number of retry attempts for failed downloads (default: 3)")
     
     args = parser.parse_args()
     
@@ -366,7 +492,7 @@ def main():
     base_dir = script_dir.parent
     
     processor = VideoProcessor(base_dir)
-    processor.run(max_videos)
+    processor.run(max_videos, args.retries)
 
 if __name__ == "__main__":
     main()

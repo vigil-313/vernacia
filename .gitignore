@@ -9,10 +9,27 @@ playlists/*/temp/
 *.wav
 *.srt
 
-# System files
+# Python virtual environment
+venv/
+env/
+.venv/
+
+# Python cache
 __pycache__/
-.DS_Store
 *.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
 # Temporary files
 temp/
@@ -22,7 +39,13 @@ tmp/
 # IDE files
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
 # Environment files
 .env
 .env.local
+
+# Log files
+*.log
