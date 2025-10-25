@@ -1,4 +1,5 @@
 # Generated content - exclude from git
+manifest.json
 playlists/*/videos/
 playlists/*/processed/
 playlists/*/temp/

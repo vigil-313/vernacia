@@ -67,7 +67,7 @@ class VideoProcessor:
         cmd = [
             "yt-dlp",
             "--format", "18/worst[height<=480][protocol^=https]+bestaudio/best",  # Low quality video + best audio
-            "--output", str(output_dir / "%(title)s.%(ext)s"),
+            "--output", str(output_dir / "%(id)s_%(title)s.%(ext)s"),
             "--concurrent-fragments", "8",
             "--cookies-from-browser", "chrome",  # Use Chrome cookies for YouTube Premium auth
             url
@@ -77,8 +77,9 @@ class VideoProcessor:
         result = subprocess.run(cmd, text=True)
         
         if result.returncode == 0:
-            # Find downloaded file
-            video_file = max(output_dir.glob("*.mp4"), key=lambda f: f.stat().st_mtime)
+            # Extract video ID from URL to find the correct file
+            video_id = url.split('v=')[-1].split('&')[0]  # Extract ID from URL
+            video_file = next(output_dir.glob(f"{video_id}_*.mp4"))
             print(f"✅ Downloaded: {video_file.name}")
             return video_file
         else:
@@ -91,7 +92,7 @@ class VideoProcessor:
             "--extract-audio", 
             "--audio-format", "mp3",
             "--audio-quality", "5",  # Medium quality - much smaller files, same transcription accuracy
-            "--format", "worstaudio",  # Use worst audio quality for speed
+            "--format", "139/140/worst",  # Use available audio formats (139=49k, 140=129k, or fallback)
             "--output", str(temp_dir / "%(title)s.%(ext)s"),
             "--cookies-from-browser", "chrome",  # Use Chrome cookies for YouTube Premium auth
             url
