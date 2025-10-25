@@ -69,6 +69,7 @@ class VideoProcessor:
             "--format", "18/worst[height<=480][protocol^=https]+bestaudio/best",  # Low quality video + best audio
             "--output", str(output_dir / "%(title)s.%(ext)s"),
             "--concurrent-fragments", "8",
+            "--cookies-from-browser", "chrome",  # Use Chrome cookies for YouTube Premium auth
             url
         ]
         
@@ -92,6 +93,7 @@ class VideoProcessor:
             "--audio-quality", "5",  # Medium quality - much smaller files, same transcription accuracy
             "--format", "worstaudio",  # Use worst audio quality for speed
             "--output", str(temp_dir / "%(title)s.%(ext)s"),
+            "--cookies-from-browser", "chrome",  # Use Chrome cookies for YouTube Premium auth
             url
         ]
         
@@ -384,21 +386,23 @@ class VideoProcessor:
             video_dir = playlist_dir / "videos"
             
             for video_idx, video_data in enumerate(playlist_data["videos"]):
-                if video_data["status"] == "processing":
-                    print(f"🧹 Cleaning up interrupted download: {video_data['title'][:50]}...")
+                if video_data["status"] in ["processing", "failed"]:
+                    status_desc = "interrupted" if video_data["status"] == "processing" else "failed"
+                    print(f"🧹 Cleaning up {status_desc} download: {video_data['title'][:50]}...")
                     
-                    # Remove partial download files
+                    # Remove partial download files  
                     if video_dir.exists():
-                        for partial_file in video_dir.glob("*.part"):
+                        for partial_file in video_dir.glob("*.part*"):  # Include .part-Frag* files
                             partial_file.unlink()
                             print(f"   Removed: {partial_file.name}")
                         for ytdl_file in video_dir.glob("*.ytdl"):
                             ytdl_file.unlink()
                             print(f"   Removed: {ytdl_file.name}")
                     
-                    # Reset status to pending
+                    # Reset status to pending for retry
                     video_data["status"] = "pending"
                     video_data["error"] = None
+                    video_data["processed_files"] = []  # Clear any partial processed files
                     cleaned_count += 1
         
         if cleaned_count > 0:
