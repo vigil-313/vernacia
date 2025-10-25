@@ -1,0 +1,282 @@
+{
+  "playlists": {
+    "ghost_blows_light": {
+      "title": "鬼吹灯 - Ghost Blows Out the Light",
+      "url": "https://www.youtube.com/playlist?list=PLUKtjfnhRgH96FuR2fcoXKGzCNq3LOn4y",
+      "videos": [
+        {
+          "url": "https://www.youtube.com/watch?v=0ROVmN3XLrk",
+          "title": "第一部 龙岭迷窟（一）#有声小说 #鬼吹灯 #有声书",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=O9Z9FXPgU44",
+          "title": "21-40  第一部 龙岭迷窟（二）#有声小说 #鬼吹灯 #有声书 #无删减",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=x2KO_h1cwDM",
+          "title": "41 60  第一部 龙岭迷窟 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=BVmkREFz1ck",
+          "title": "鬼吹灯 61 87  第一部 龙岭迷窟完",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=v-rAzuaJoG8",
+          "title": "88 110 第二部 龙岭迷窟 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=NO1ZkH-opbM",
+          "title": "111 130 第二部 龙岭迷窟 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=i66Fi0EXCeI",
+          "title": "131 156 第二部 龙岭迷窟完 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=24NOI9F1s6M",
+          "title": "157 180 第三部 云南虫谷 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=_zFQX-wwoRs",
+          "title": "181 200 第三部 云南虫谷 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=MxwNkmxs8sk",
+          "title": "201 220 第三部 云南虫谷 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=QCqbZM8w-Ws",
+          "title": "241 258 第三部 云南虫谷完 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=TWr2sKX4vkE",
+          "title": "259 280 第四部 昆仑神宫 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=D9gPgSHm5FA",
+          "title": "281 300  第四部 昆仑神宫 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=ynUq8LReVAI",
+          "title": "301 320  第四部 昆仑神宫 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=6Cv2DLeGN9E",
+          "title": "321 340  第四部 昆仑神宫 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=tWjcaWKbMY8",
+          "title": "341 350  第四部 昆仑神宫完 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=kWI8_VUziEs",
+          "title": "1 20 黄皮子坟 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=UnFalRug8HM",
+          "title": "21 40 第五部 黄皮子坟完 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=a2KiXncPAxE",
+          "title": "41 60 黄皮子坟 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=XLDRvY7olC0",
+          "title": "61 87 第五部 黄皮子坟完 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=mzus4dbO97w",
+          "title": "88 110 南海归墟 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=iovQMRUZ4yM",
+          "title": "111 130 南海 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=KruZ3zK4Tfo",
+          "title": "131 150 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=dxdrlaoa-uE",
+          "title": "151 179 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=20XVNkQlT08",
+          "title": "201 220 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=QAhIb5FePmo",
+          "title": "鬼吹灯 云南虫谷 221 240",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=cwo3bmQ_A1E",
+          "title": "221 240 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=vQnUp35Deh4",
+          "title": "241 268 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=DffDQdmYPjU",
+          "title": "269 290 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=79Kq8foT4pE",
+          "title": "291 310 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=ZnlPJzaSLtk",
+          "title": "311 329 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=hooledkywyU",
+          "title": "330 349 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=lPHV9QMkbUw",
+          "title": "350 369 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        },
+        {
+          "url": "https://www.youtube.com/watch?v=iKSaFYJWltE",
+          "title": "370 394 #有声书#鬼吹灯#有声小说",
+          "splits": 3,
+          "status": "pending",
+          "error": null,
+          "processed_files": []
+        }
+      ]
+    }
+  }
+}

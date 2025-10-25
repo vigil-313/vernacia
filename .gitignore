@@ -1,0 +1,28 @@
+# Generated content - exclude from git
+playlists/*/videos/
+playlists/*/processed/
+playlists/*/temp/
+
+# Media files
+*.mp3
+*.mp4
+*.wav
+*.srt
+
+# System files
+__pycache__/
+.DS_Store
+*.pyc
+
+# Temporary files
+temp/
+tmp/
+.tmp/
+
+# IDE files
+.vscode/
+.idea/
+
+# Environment files
+.env
+.env.local
