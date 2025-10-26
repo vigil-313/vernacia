@@ -103,7 +103,7 @@ class ManifestManager:
                         videos.append({"url": line, "title": f"Video (line {line_num})"})
         return videos
     
-    def add_playlist(self, playlist_id, playlist_title, playlist_url):
+    def add_playlist(self, playlist_id, playlist_title, playlist_url, splits=3):
         """Add entire YouTube playlist"""
         manifest = self.load_manifest()
         
@@ -116,7 +116,7 @@ class ManifestManager:
                 videos.append({
                     "url": video_data["url"],
                     "title": video_data["title"],
-                    "splits": 3,
+                    "splits": splits,
                     "status": "pending",
                     "error": None,
                     "processed_files": []
@@ -135,7 +135,7 @@ class ManifestManager:
         except Exception as e:
             print(f"❌ Failed to add playlist: {e}")
     
-    def add_video_list(self, playlist_id, playlist_title, video_sources):
+    def add_video_list(self, playlist_id, playlist_title, video_sources, splits=3):
         """Add videos from files or URLs to playlist"""
         manifest = self.load_manifest()
         
@@ -154,6 +154,9 @@ class ManifestManager:
                 # Read from file
                 print(f"📄 Reading videos from: {source}")
                 file_videos = self.read_videos_from_file(source)
+                # Update splits for file videos
+                for video in file_videos:
+                    video["splits"] = splits
                 videos.extend(file_videos)
             else:
                 # Single video URL
@@ -162,7 +165,7 @@ class ManifestManager:
                     videos.append({
                         "url": source,
                         "title": title,
-                        "splits": 3,
+                        "splits": splits,
                         "status": "pending", 
                         "error": None,
                         "processed_files": []
@@ -173,7 +176,7 @@ class ManifestManager:
                     videos.append({
                         "url": source,
                         "title": "Unknown Video",
-                        "splits": 3,
+                        "splits": splits,
                         "status": "pending",
                         "error": None,
                         "processed_files": []
@@ -211,6 +214,7 @@ def main():
     parser = argparse.ArgumentParser(description="Add videos to processing manifest")
     parser.add_argument("--playlist", required=True, help="Playlist ID/name")
     parser.add_argument("--title", help="Playlist display title (defaults to playlist ID)")
+    parser.add_argument("--splits", type=int, default=3, help="Number of splits per video (default: 3)")
     
     # Mutually exclusive group for input methods
     input_group = parser.add_mutually_exclusive_group(required=True)
@@ -236,15 +240,15 @@ def main():
     try:
         if args.url:
             # Add entire playlist
-            manager.add_playlist(args.playlist, playlist_title, args.url)
+            manager.add_playlist(args.playlist, playlist_title, args.url, args.splits)
         
         elif args.video:
             # Add single video
-            manager.add_video_list(args.playlist, playlist_title, [args.video])
+            manager.add_video_list(args.playlist, playlist_title, [args.video], args.splits)
         
         elif args.videos:
             # Add multiple videos/files
-            manager.add_video_list(args.playlist, playlist_title, args.videos)
+            manager.add_video_list(args.playlist, playlist_title, args.videos, args.splits)
         
         print(f"\n💡 Next step: python scripts/main.py 2  # Process 2 videos")
         

@@ -25,10 +25,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class VideoProcessor:
-    def __init__(self, base_dir):
+    def __init__(self, base_dir, high_quality_video=False):
         self.base_dir = Path(base_dir)
         self.manifest_file = self.base_dir / "manifest.json"
         self.api_key = os.getenv("OPENAI_API_KEY")
+        self.high_quality_video = high_quality_video
         
         if not self.api_key:
             print("❌ Error: OPENAI_API_KEY environment variable not set")
@@ -61,19 +62,26 @@ class VideoProcessor:
         print(f"📝 Updated status: {status}")
     
     def download_video(self, url, output_dir):
-        """Download video with low quality video + high quality audio"""
+        """Download video with configurable quality"""
         output_dir.mkdir(parents=True, exist_ok=True)
+        
+        if self.high_quality_video:
+            format_selector = "best[height<=1080][protocol^=https]/best"  # High quality up to 1080p
+            quality_desc = "high quality"
+        else:
+            format_selector = "18/worst[height<=480][protocol^=https]+bestaudio/best"  # Low quality + best audio
+            quality_desc = "low quality"
         
         cmd = [
             "yt-dlp",
-            "--format", "18/worst[height<=480][protocol^=https]+bestaudio/best",  # Low quality video + best audio
+            "--format", format_selector,
             "--output", str(output_dir / "%(id)s_%(title)s.%(ext)s"),
             "--concurrent-fragments", "8",
             "--cookies-from-browser", "chrome",  # Use Chrome cookies for YouTube Premium auth
             url
         ]
         
-        print(f"📥 Downloading: {url}")
+        print(f"📥 Downloading ({quality_desc}): {url}")
         result = subprocess.run(cmd, text=True)
         
         if result.returncode == 0:
@@ -435,20 +443,33 @@ class VideoProcessor:
                     print(f"⚠️  Download attempt {attempt + 1} failed: {str(e)[:100]}...")
                     continue
 
-    def run(self, max_videos=None, max_retries=3):
+    def run(self, max_videos=None, max_retries=3, target_playlist=None):
         """Process pending videos in manifest"""
         # First, clean up any interrupted downloads
         self.cleanup_interrupted_downloads()
         
         manifest = self.load_manifest()
         
-        # Count total pending
+        # Filter playlists if target specified
+        if target_playlist:
+            if target_playlist not in manifest["playlists"]:
+                print(f"❌ Playlist '{target_playlist}' not found in manifest")
+                available = list(manifest["playlists"].keys())
+                print(f"📋 Available playlists: {', '.join(available)}")
+                return
+            playlists_to_process = {target_playlist: manifest["playlists"][target_playlist]}
+            print(f"🎯 Targeting playlist: {target_playlist}")
+        else:
+            playlists_to_process = manifest["playlists"]
+        
+        # Count total pending in target playlists
         total_pending = 0
-        for playlist_data in manifest["playlists"].values():
+        for playlist_data in playlists_to_process.values():
             total_pending += sum(1 for v in playlist_data["videos"] if v["status"] == "pending")
         
         if total_pending == 0:
-            print("✅ No pending videos to process!")
+            target_msg = f" in playlist '{target_playlist}'" if target_playlist else ""
+            print(f"✅ No pending videos to process{target_msg}!")
             return
         
         # Determine how many to process
@@ -459,8 +480,8 @@ class VideoProcessor:
         
         processed_count = 0
         
-        # Process videos in order across all playlists
-        for playlist_id, playlist_data in manifest["playlists"].items():
+        # Process videos in order across target playlists
+        for playlist_id, playlist_data in playlists_to_process.items():
             if processed_count >= to_process:
                 break
                 
@@ -485,6 +506,8 @@ def main():
     parser = argparse.ArgumentParser(description="Process Chinese videos for Language Reactor")
     parser.add_argument("count", nargs="?", type=int, help="Number of videos to process (default: all)")
     parser.add_argument("--count", type=int, help="Number of videos to process")
+    parser.add_argument("--playlist", type=str, help="Target specific playlist ID (e.g. 'zhushanlang')")
+    parser.add_argument("--hq-video", action="store_true", help="Download high quality video instead of low quality")
     parser.add_argument("--retries", type=int, default=3, help="Number of retry attempts for failed downloads (default: 3)")
     
     args = parser.parse_args()
@@ -496,8 +519,8 @@ def main():
     script_dir = Path(__file__).parent
     base_dir = script_dir.parent
     
-    processor = VideoProcessor(base_dir)
-    processor.run(max_videos, args.retries)
+    processor = VideoProcessor(base_dir, args.hq_video)
+    processor.run(max_videos, args.retries, args.playlist)
 
 if __name__ == "__main__":
     main()
